@@ -1,26 +1,25 @@
 fun main() {
 
-    fun readElves(input: List<String>): MutableMap<Int, Int> {
-        var currentElf = 1
-        val elves = mutableMapOf<Int, Int>()
-        input.forEach {
-            if (it.isBlank()) {
-                currentElf++
-            } else {
-                elves.merge(currentElf, it.toInt()) { first, second -> first + second }
-            }
+    fun readCalories(input: List<String>): List<Int> {
+        return input.fold(mutableListOf(mutableListOf<Int>())) {
+            acc, line ->
+                if (line.isBlank()) {
+                    acc.add(mutableListOf())
+                } else {
+                    acc.last().add(line.toInt())
+                }
+                acc
         }
-        return elves
+            .filter { it.isNotEmpty() }
+            .map { it.sum() }
     }
 
     fun part1(input: List<String>): Int {
-        val elves = readElves(input)
-        return elves.map { it.value }.max()
+        return readCalories(input).max()
     }
 
     fun part2(input: List<String>): Int {
-        return readElves(input)
-            .map { it.value }
+        return readCalories(input)
             .sortedDescending()
             .take(3)
             .sum()
