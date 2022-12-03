@@ -44,7 +44,7 @@ private val winMap = mapOf(
 
 private val lossMap = winMap.entries.associate { it.value to it.key }
 
-enum class Sign(val points: Int) {
+private enum class Sign(val points: Int) {
     ROCK(1), PAPER(2), SCISSORS(3);
 
     fun beats(other: Sign): Boolean {
@@ -52,7 +52,7 @@ enum class Sign(val points: Int) {
     }
 }
 
-enum class Result(val points: Int) {
+private enum class Result(val points: Int) {
     LOSS(0), WIN(6), DRAW(3);
 
     fun matchingSign(other: Sign): Sign {
@@ -64,7 +64,7 @@ enum class Result(val points: Int) {
     }
 }
 
-fun String.asSign(): Sign {
+private fun String.asSign(): Sign {
     return when (this) {
         "A", "X" -> ROCK
         "B", "Y" -> PAPER
@@ -73,7 +73,7 @@ fun String.asSign(): Sign {
     }
 }
 
-fun String.asResult(): Result {
+private fun String.asResult(): Result {
     return when (this) {
         "X" -> LOSS
         "Y" -> DRAW
