@@ -17,7 +17,6 @@ fun main() {
 
     // test if implementation meets criteria from the description, like:
     val testInput = readInput("Day03_test")
-    println(testInput.map { it.splitInHalf() })
     check(part1(testInput) == 157)
     check(part2(testInput) == 70)
 
@@ -26,5 +25,5 @@ fun main() {
     println(part2(input))
 }
 
-private val prioritiesMap = (1..26).associateBy { 'a' + it - 1 } + (27 .. 52).associateBy { 'A' + it - 27 }
+private val prioritiesMap = ('a'..'z').zip(1..26).toMap() + ('A'..'Z').zip(27 .. 52).toMap()
 private fun String.splitInHalf() = substring(0, length/2) to substring(length/2)
