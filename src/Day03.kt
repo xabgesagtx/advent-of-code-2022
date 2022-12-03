@@ -2,17 +2,17 @@ fun main() {
 
     fun part1(input: List<String>): Int {
         return input.map { it.splitInHalf() }
-            .map { it.first.toSet().intersect(it.second.toSet()) }
+            .map { commonCharacters(it.first, it.second) }
             .flatten()
-            .sumOf { prioritiesMap[it]!! }
+            .sumOf { it.priority }
     }
 
     fun part2(input: List<String>): Int {
         return input
             .chunked(3)
-            .map { it[0].toSet().intersect(it[1].toSet()).intersect(it[2].toSet()) }
+            .map { commonCharacters(*it.toTypedArray()) }
             .flatten()
-            .sumOf { prioritiesMap[it]!! }
+            .sumOf { it.priority }
     }
 
     // test if implementation meets criteria from the description, like:
@@ -25,5 +25,11 @@ fun main() {
     println(part2(input))
 }
 
-private val prioritiesMap = ('a'..'z').zip(1..26).toMap() + ('A'..'Z').zip(27 .. 52).toMap()
 private fun String.splitInHalf() = substring(0, length/2) to substring(length/2)
+private val Char.priority
+    get() = if (isLowerCase()) this - 'a' + 1 else this - 'A' + 27
+private fun commonCharacters(vararg texts: String): Set<Char> =
+    texts.drop(1)
+        .fold(texts.first().toSet()) {
+                acc, text -> acc.intersect(text.toSet())
+        }
