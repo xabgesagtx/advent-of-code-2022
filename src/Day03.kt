@@ -26,8 +26,9 @@ fun main() {
 private fun String.splitInHalf() = substring(0, length/2) to substring(length/2)
 private val Char.priority
     get() = if (isLowerCase()) this - 'a' + 1 else this - 'A' + 27
+
 private fun commonCharacters(vararg texts: String): Set<Char> =
-    texts.drop(1)
-        .fold(texts.first().toSet()) {
-                acc, text -> acc.intersect(text.toSet())
+    texts.map { it.toSet() }
+        .reduce {
+                acc, text -> acc intersect text
         }
