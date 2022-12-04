@@ -2,16 +2,14 @@ fun main() {
 
     fun part1(input: List<String>): Int {
         return input.map { it.splitInHalf() }
-            .map { commonCharacters(it.first, it.second) }
-            .flatten()
+            .flatMap { commonCharacters(it.first, it.second) }
             .sumOf { it.priority }
     }
 
     fun part2(input: List<String>): Int {
         return input
             .chunked(3)
-            .map { commonCharacters(*it.toTypedArray()) }
-            .flatten()
+            .flatMap { commonCharacters(*it.toTypedArray()) }
             .sumOf { it.priority }
     }
 
