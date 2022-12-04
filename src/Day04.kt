@@ -2,14 +2,14 @@ fun main() {
 
     fun part1(input: List<String>): Int {
         return input.map { it.split(",") }
-            .map { it[0].toIntSet() to it[1].toIntSet() }
+            .map { (first, second) -> first.toIntSet() to second.toIntSet() }
             .count { it.first.containsAll(it.second) || it.second.containsAll(it.first) }
     }
 
     fun part2(input: List<String>): Int {
         return input.map { it.split(",") }
-            .map { it[0].toIntSet() to it[1].toIntSet() }
-            .count { it.first.intersect(it.second).isNotEmpty() }
+            .map { (first, second) -> first.toIntSet() to second.toIntSet() }
+            .count { (it.first intersect it.second).isNotEmpty() }
     }
 
     // test if implementation meets criteria from the description, like:
@@ -23,6 +23,6 @@ fun main() {
 }
 
 private fun String.toIntSet(): Set<Int> {
-    val numberList = this.split("-")
-    return (numberList[0].toInt() .. numberList[1].toInt()).toSet()
+    val (start, end) = this.split("-")
+    return (start.toInt() .. end.toInt()).toSet()
 }
