@@ -1,20 +1,18 @@
 fun main() {
 
     fun part1(input: List<String>): String {
-        val stacks = getInitialStackValues(input)
-        getMoveLines(input).forEach { line ->
-            stacks.doMove(line)
+        val stacks = input.initialStackValues
+        input.moveLines.forEach { line ->
+            stacks.doMove9000(line)
         }
-        println(stacks)
         return stacks.entries.sortedBy { it.key }.map { it.value.last() }.joinToString("")
     }
 
     fun part2(input: List<String>): String {
-        val stacks = getInitialStackValues(input)
-        getMoveLines(input).forEach { line ->
+        val stacks = input.initialStackValues
+        input.moveLines.forEach { line ->
             stacks.doMove9001(line)
         }
-        println(stacks)
         return stacks.entries.sortedBy { it.key }.map { it.value.last() }.joinToString("")
     }
 
@@ -28,40 +26,37 @@ fun main() {
     println(part2(input))
 }
 
-
-private fun getNumberOfStacks(input: List<String>): Int {
-    val stackNumberLine = input.first { line -> line.trim().startsWith("1") }
-    return stackNumberLine.trim().split(" ").filter { it.isNotBlank() }.map { it.toInt() }.max()
-}
-
-private fun getStackValue(line: String, stack: Int): Char? {
-    val n = stack - 1
-    return line[n* 4 + 1].takeIf { it.isLetter() }
-}
-
-private fun getInitialStackLines(input: List<String>): List<String> {
-    return input.takeWhile { line -> !line.trim().startsWith("1")  }.reversed()
-}
-
-private fun getInitialStackValues(input: List<String>): Map<Int, MutableList<Char>> {
-    val numberOfStacks = getNumberOfStacks(input)
-    val stackLines = getInitialStackLines(input)
-    return (1..numberOfStacks).fold(mutableMapOf()) {
-        stacks, currentStack ->
-            val initalStack = ArrayList<Char>()
-            stackLines.forEach {
-                line -> getStackValue(line, currentStack)?.let { initalStack.add(it) }
-            }
-            stacks[currentStack] = initalStack
-            stacks
+private val List<String>.numberOfStacks: Int
+    get() {
+        val stackNumberLine = first { line -> line.trim().startsWith("1") }
+        return stackNumberLine.trim().split(" ").filter { it.isNotBlank() }.map { it.toInt() }.max()
     }
+
+private fun String.valueForStack(stack: Int): Char? {
+    val n = stack - 1
+    return this[n * 4 + 1].takeIf { it.isLetter() }
 }
 
-private fun getMoveLines(input: List<String>): List<String> {
-    return input.filter { it.startsWith("move") }
-}
+private val List<String>.initialStackLines: List<String>
+    get() = takeWhile { line -> !line.trim().startsWith("1") }.reversed()
 
-private fun Map<Int, MutableList<Char>>.doMove(command: String) {
+private val List<String>.initialStackValues: Map<Int, MutableList<Char>>
+    get() {
+        val numberOfStacks = numberOfStacks
+        val stackLines = initialStackLines
+        return (1..numberOfStacks).associateWith { currentStack ->
+            stackLines.mapNotNull { line ->
+                line.valueForStack(currentStack)
+            }.toMutableList()
+        }
+    }
+
+private val List<String>.moveLines: List<String>
+    get() {
+        return filter { it.startsWith("move") }
+    }
+
+private fun Map<Int, MutableList<Char>>.doMove9000(command: String) {
     val (numberOfItems, from, to) = command.split(" ").mapNotNull { it.toIntOrNull() }
     repeat(numberOfItems) { this[to]!!.add(this[from]!!.removeLast()) }
 }
