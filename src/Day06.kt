@@ -1,11 +1,11 @@
 fun main() {
 
     fun checkForMarker(input: String, distinctCharacters: Int): Int {
-        return input.withIndex()
+        return input
             .windowed(distinctCharacters)
-            .first { window -> window.distinctBy { it.value }.size == distinctCharacters }
-            .last()
-            .index + 1
+            .withIndex()
+            .first { window -> window.value.toSet().size == distinctCharacters }
+            .index + distinctCharacters
     }
 
     fun part1(input: String): Int {
