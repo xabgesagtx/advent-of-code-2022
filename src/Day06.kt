@@ -3,9 +3,7 @@ fun main() {
     fun checkForMarker(input: String, distinctCharacters: Int): Int {
         return input
             .windowed(distinctCharacters)
-            .withIndex()
-            .first { window -> window.value.toSet().size == distinctCharacters }
-            .index + distinctCharacters
+            .indexOfFirst { window -> window.toSet().size == distinctCharacters } + distinctCharacters
     }
 
     fun part1(input: String): Int {
