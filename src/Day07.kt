@@ -1,19 +1,22 @@
 fun main() {
 
     fun readDirectoryContent(input: List<String>): FSDir {
-        return input.fold(ArrayDeque<FSDir>()) {
+        return input.fold(listOf<FSDir>()) {
             stack, line ->
                 when {
-                    line.isLeaveCommand -> stack.removeFirst()
+                    line.isLeaveCommand -> stack.dropLast(1)
                     line.isChangeDir ->  {
                         val newDir = line.toDir()
-                        stack.firstOrNull()?.addItem(newDir)
-                        stack.addFirst(newDir)
+                        stack.lastOrNull()?.addItem(newDir)
+                        stack + newDir
                     }
-                    line.isFile -> stack.first().addItem(line.toFile())
+                    line.isFile -> {
+                        stack.last().addItem(line.toFile())
+                        stack
+                    }
+                    else -> stack
                 }
-                stack
-        }.last()
+        }.first()
     }
 
     fun part1(input: List<String>): Int {
