@@ -1,14 +1,14 @@
 fun main() {
 
-    fun readDirectoryContent(iter: Iterator<String>, name: String): Dir {
+    fun readDirectoryContent(iter: Iterator<String>, name: String): FSDir {
         println("Reading content for $name")
-        val currentDir = Dir(mutableListOf(), name)
+        val currentDir = FSDir(mutableListOf(), name)
         var currentLine = iter.next()
         while (!currentLine.isLeaveCommand) {
             println("Current command $currentLine")
             when {
-                currentLine.isChangeDir -> currentDir.items.add(readDirectoryContent(iter, currentLine.dirName))
-                !currentLine.isListCommand && !currentLine.isDir -> currentDir.items.add(currentLine.toFile())
+                currentLine.isChangeDir -> currentDir.addItem(readDirectoryContent(iter, currentLine.dirName))
+                currentLine.isFile -> currentDir.addItem(currentLine.toFile())
             }
             if (iter.hasNext()) {
                 currentLine = iter.next()
@@ -19,7 +19,7 @@ fun main() {
         return currentDir
     }
 
-    fun parseInput(input: List<String>): Dir {
+    fun parseInput(input: List<String>): FSDir {
         val iter = input.iterator()
         return readDirectoryContent(iter, iter.next().dirName)
     }
@@ -51,30 +51,28 @@ fun main() {
 }
 
 private val String.isChangeDir: Boolean
-    get() = this.startsWith("$ cd ")
+    get() = startsWith("$ cd ")
 
-private val String.isDir: Boolean
-    get() = this.startsWith("dir ")
+private val String.isFile: Boolean
+    get() = this[0].isDigit()
 
-private fun String.toFile(): File {
-    val (fileSize, name) = this.split(" ")
-    return File(fileSize.toInt(), name)
+private fun String.toFile(): FSFile {
+    val (fileSize, name) = split(" ")
+    return FSFile(fileSize.toInt(), name)
 }
 
 private val String.dirName: String
-    get() = this.substringAfter("$ cd ").trim()
+    get() = substringAfter("$ cd ").trim()
 
-private val String.isListCommand: Boolean
-    get() = this == "$ ls"
 private val String.isLeaveCommand: Boolean
     get() = this == "$ cd .."
 
-private interface FileSystemItem {
+private interface FSItem {
     fun calculatedSize(): Int
-    fun print(indent: Int = 0): Unit
+    fun print(indent: Int = 0)
 }
 
-private data class File(val size: Int, val name: String) : FileSystemItem {
+private data class FSFile(val size: Int, val name: String) : FSItem {
     override fun calculatedSize(): Int {
         return size
     }
@@ -84,10 +82,8 @@ private data class File(val size: Int, val name: String) : FileSystemItem {
     }
 }
 
-private data class Dir(val items: MutableList<FileSystemItem>, val name: String): FileSystemItem {
-    override fun calculatedSize(): Int {
-        return items.sumOf { it.calculatedSize() }
-    }
+private data class FSDir(val items: MutableList<FSItem>, val name: String): FSItem {
+    override fun calculatedSize(): Int = items.sumOf { it.calculatedSize() }
 
     override fun print(indent: Int) {
         println("${" ".repeat(indent)} dir $name")
@@ -96,10 +92,10 @@ private data class Dir(val items: MutableList<FileSystemItem>, val name: String)
         }
     }
 
-    val allDirs: List<Dir>
-        get() {
-            return items.mapNotNull {
-                it as? Dir
-            }.flatMap { listOf(it) + it.allDirs }
-        }
+    fun addItem(item: FSItem) = items.add(item)
+
+    val allDirs: List<FSDir>
+        get() = items.mapNotNull {
+            it as? FSDir
+        }.flatMap { listOf(it) + it.allDirs }
 }
