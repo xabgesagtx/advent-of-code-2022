@@ -1,38 +1,29 @@
 fun main() {
 
-    fun readDirectoryContent(iter: Iterator<String>, name: String): FSDir {
-        println("Reading content for $name")
-        val currentDir = FSDir(mutableListOf(), name)
-        var currentLine = iter.next()
-        while (!currentLine.isLeaveCommand) {
-            println("Current command $currentLine")
-            when {
-                currentLine.isChangeDir -> currentDir.addItem(readDirectoryContent(iter, currentLine.dirName))
-                currentLine.isFile -> currentDir.addItem(currentLine.toFile())
-            }
-            if (iter.hasNext()) {
-                currentLine = iter.next()
-            } else {
-                break
-            }
-        }
-        return currentDir
+    fun readDirectoryContent(input: List<String>): FSDir {
+        return input.fold(ArrayDeque<FSDir>()) {
+            stack, line ->
+                when {
+                    line.isLeaveCommand -> stack.removeFirst()
+                    line.isChangeDir ->  {
+                        val newDir = line.toDir()
+                        stack.firstOrNull()?.addItem(newDir)
+                        stack.addFirst(newDir)
+                    }
+                    line.isFile -> stack.first().addItem(line.toFile())
+                }
+                stack
+        }.last()
     }
-
-    fun parseInput(input: List<String>): FSDir {
-        val iter = input.iterator()
-        return readDirectoryContent(iter, iter.next().dirName)
-    }
-
 
     fun part1(input: List<String>): Int {
-        val mainDir = parseInput(input)
+        val mainDir = readDirectoryContent(input)
         mainDir.print()
         return mainDir.allDirs.map { it.calculatedSize() }.filter { it < 100000 }.sum()
     }
 
     fun part2(input: List<String>): Int {
-        val mainDir = parseInput(input)
+        val mainDir = readDirectoryContent(input)
         val spaceUsed = mainDir.calculatedSize()
         val spaceFree = 70000000 - spaceUsed
         val spaceToBeFreed = 30000000 - spaceFree
@@ -56,16 +47,18 @@ private val String.isChangeDir: Boolean
 private val String.isFile: Boolean
     get() = this[0].isDigit()
 
+private val String.isLeaveCommand: Boolean
+    get() = this == "$ cd .."
+
 private fun String.toFile(): FSFile {
     val (fileSize, name) = split(" ")
     return FSFile(fileSize.toInt(), name)
 }
 
-private val String.dirName: String
-    get() = substringAfter("$ cd ").trim()
-
-private val String.isLeaveCommand: Boolean
-    get() = this == "$ cd .."
+private fun String.toDir(): FSDir {
+    val dirName = this.substringAfter("$ cd ").trim()
+    return FSDir(dirName)
+}
 
 private interface FSItem {
     fun calculatedSize(): Int
@@ -73,16 +66,16 @@ private interface FSItem {
 }
 
 private data class FSFile(val size: Int, val name: String) : FSItem {
-    override fun calculatedSize(): Int {
-        return size
-    }
+    override fun calculatedSize() = size
 
     override fun print(indent: Int) {
         println("${" ".repeat(indent)} file $name $size")
     }
 }
 
-private data class FSDir(val items: MutableList<FSItem>, val name: String): FSItem {
+private data class FSDir(val name: String): FSItem {
+    private val items: MutableList<FSItem> = mutableListOf()
+
     override fun calculatedSize(): Int = items.sumOf { it.calculatedSize() }
 
     override fun print(indent: Int) {
