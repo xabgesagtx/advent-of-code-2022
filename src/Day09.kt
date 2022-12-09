@@ -4,23 +4,19 @@ fun main() {
 
     val day = "Day09"
 
-    fun simulateRopeMovement(input: List<String>, numberOfTails: Int): Int {
-        val locations = mutableSetOf(0 to 0)
-        var head = 0 to 0
-        var tails = List(numberOfTails) { 0 to 0 }
-        for (command in input) {
-            head.move(command).forEach { newHeadPosition ->
-                head = newHeadPosition
-                var toFollow = head
-                tails = tails.map { tail ->
-                    val newTailPos = tail.follow(toFollow)
-                    toFollow = newTailPos
-                    newTailPos
+    fun simulateRopeMovement(input: List<String>, numberOfTailElements: Int): Int {
+        return buildSet {
+            add(0 to 0)
+            var rope = List(numberOfTailElements + 1) { 0 to 0 }
+            for (command in input) {
+                rope.first().move(command).forEach { newHeadPosition ->
+                    rope = rope.drop(1).fold(listOf(newHeadPosition)) { updatedRope, tailElement ->
+                        updatedRope + tailElement.follow(updatedRope.last())
+                    }
+                    add(rope.last())
                 }
-                locations.add(tails.last())
             }
-        }
-        return locations.size
+        }.size
     }
 
     fun part1(input: List<String>): Int {
@@ -56,9 +52,9 @@ private fun Pair<Int, Int>.move(command: String): List<Pair<Int, Int>> {
 }
 
 private fun Pair<Int, Int>.follow(head: Pair<Int, Int>): Pair<Int, Int> {
-    val incFirst = (head.first - first).coerceIn(-1 .. 1)
-    val incSecond = (head.second - second).coerceIn(-1 .. 1)
-    incFirst.coerceIn(-1 .. 1)
+    val incFirst = (head.first - first).coerceIn(-1..1)
+    val incSecond = (head.second - second).coerceIn(-1..1)
+    incFirst.coerceIn(-1..1)
     return when {
         isTouching(head) -> this
         else -> first + incFirst to second + incSecond
