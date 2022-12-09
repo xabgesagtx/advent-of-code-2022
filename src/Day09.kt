@@ -4,24 +4,10 @@ fun main() {
 
     val day = "Day09"
 
-    fun part1(input: List<String>): Int {
+    fun simulateRopeMovement(input: List<String>, numberOfTails: Int): Int {
         val locations = mutableSetOf(0 to 0)
         var head = 0 to 0
-        var tail = 0 to 0
-        for (command in input) {
-            head.move(command).forEach { newHeadPosition ->
-                head = newHeadPosition
-                tail = tail.follow(head)
-                locations.add(tail)
-            }
-        }
-        return locations.size
-    }
-
-    fun part2(input: List<String>): Int {
-        val locations = mutableSetOf(0 to 0)
-        var head = 0 to 0
-        var tails = List(9) { 0 to 0 }
+        var tails = List(numberOfTails) { 0 to 0 }
         for (command in input) {
             head.move(command).forEach { newHeadPosition ->
                 head = newHeadPosition
@@ -35,6 +21,14 @@ fun main() {
             }
         }
         return locations.size
+    }
+
+    fun part1(input: List<String>): Int {
+        return simulateRopeMovement(input, 1)
+    }
+
+    fun part2(input: List<String>): Int {
+        return simulateRopeMovement(input, 9)
     }
 
     // test if implementation meets criteria from the description, like:
@@ -62,12 +56,11 @@ private fun Pair<Int, Int>.move(command: String): List<Pair<Int, Int>> {
 }
 
 private fun Pair<Int, Int>.follow(head: Pair<Int, Int>): Pair<Int, Int> {
-    val incFirst = if (first > head.first) -1 else 1
-    val incSecond = if (second > head.second) -1 else 1
+    val incFirst = (head.first - first).coerceIn(-1 .. 1)
+    val incSecond = (head.second - second).coerceIn(-1 .. 1)
+    incFirst.coerceIn(-1 .. 1)
     return when {
         isTouching(head) -> this
-        isInSameRow(head) -> first + incFirst to second
-        isInSameColumn(head) -> first to second + incSecond
         else -> first + incFirst to second + incSecond
     }
 }
@@ -76,12 +69,4 @@ private fun Pair<Int, Int>.isTouching(other: Pair<Int, Int>): Boolean {
     val xDiff = (this.first - other.first).absoluteValue
     val yDiff = (this.second - other.second).absoluteValue
     return xDiff < 2 && yDiff < 2
-}
-
-private fun Pair<Int, Int>.isInSameRow(other: Pair<Int, Int>): Boolean {
-    return second == other.second
-}
-
-private fun Pair<Int, Int>.isInSameColumn(other: Pair<Int, Int>): Boolean {
-    return first == other.first
 }
